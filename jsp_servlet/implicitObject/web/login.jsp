@@ -10,10 +10,18 @@
   <jsp:include page="header.jsp"/>
 </header>
 
+<%
+  if (session.getAttribute("uId") != null){
+
+    response.sendRedirect("./session.jsp?uId=" + session.getAttribute("uId"));
+  //redirect : 요청을 다시 만듦(기존 요청이 삭제되고 새로운 요청을 만듦)
+  }
+%>
+
 <main>
   <h1>LOGIN</h1>
   <div>
-    <form method="post" action="session.jsp">
+    <form method="get" action="session.jsp">
       <div class="form__list">
         <label for="uId">ID: </label>
         <%-- key-value (name-value)   --%>

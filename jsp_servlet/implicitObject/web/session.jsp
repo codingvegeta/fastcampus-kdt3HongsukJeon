@@ -2,6 +2,7 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+
 <html>
 <head>
   <meta charset="UTF-8">
@@ -28,8 +29,8 @@
   }
 
   session.setAttribute("uId", uId);
-  session.setMaxInactiveInterval(300); // 5분
-  // session 객체 연결 시간 지정 (5분, 기본 30분 (1800초))
+  session.setMaxInactiveInterval(5); // 5분
+  // session 객체 연결 시간 지정 (5분, 기본 30분)
   // 5분 경과 후에 연결 종료
 %>
 
