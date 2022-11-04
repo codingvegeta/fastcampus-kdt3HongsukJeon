@@ -3,6 +3,7 @@ package org.example.overview.members.entity;
 import org.example.overview.members.dto.MemberDTO;
 
 public class Member {
+
     private String uId = "";
     private String uPw = "";
     private String uEmail = "";
@@ -10,7 +11,7 @@ public class Member {
     public Member() {
     }
 
-    public Member(String uId, String uPw) {
+    public Member(String uId, String uEmail) {
         this.uId = uId;
         this.uPw = uPw;
     }

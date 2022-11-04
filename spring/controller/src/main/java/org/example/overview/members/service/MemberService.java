@@ -34,13 +34,7 @@ public class MemberService implements IMemberService {
 //        return memberService;
 //    }
 
-    @Override
-    public List<MemberDTO> findByUserIdOrEmail(String q) {
-        if (q == null) return null;
 
-        List<Member> memberList = memberDAO.search(q);
-        return memberList.stream().map(m -> m.toDTO()).collect(Collectors.toList());
-    }
 
     @Override
     public boolean autoLogin(String autoLogin, String cookieId) {
@@ -91,7 +85,17 @@ public class MemberService implements IMemberService {
         if (uId == null) return null;
 
         Member member = memberDAO.select(uId);
+        if (member == null) return null;
+
         return member.toDTO();
+    }
+
+    @Override
+    public List<MemberDTO> findByUserIdOrEmail(String q) {
+        if (q == null) return null;
+
+        List<Member> memberList = memberDAO.search(q);
+        return memberList.stream().map(m -> m.toDTO()).collect(Collectors.toList());
     }
 
     @Override
@@ -107,10 +111,38 @@ public class MemberService implements IMemberService {
         Member member = memberDAO.select(uId);
         if (member == null || member.getuPw() == null) return false;
         if (!member.getuPw().equals(uPw.getuPw())) return false;
+        if (member.getuPw().equals(uNewPw.getuPw())) return false; // DB PWD == New PWD
 
         int res = memberDAO.update(uId, uNewPw.getuPw());
         return res > 0;
     }
+
+    @Override
+    public boolean checkPassword(String uId, Password uPw) {
+        if (uId == null || uPw == null) return false;
+
+        Member member = memberDAO.select(uId);
+        if (member == null) return false;
+        if (!member.getuPw().equals(uPw.getuPw())) return false;
+
+        return true;
+    }
+
+    @Override
+    public boolean checkNewPassword(String uId, Password uNewPw) {
+        if (uId == null || uNewPw == null) return false;
+
+        Member member = memberDAO.select(uId);
+        if (member == null) return false;
+
+        System.out.println(member.getuPw());
+        System.out.println(uNewPw.getuPw());
+        if (member.getuPw().equals(uNewPw.getuPw())) return false;
+
+        return true;
+    }
+
+
 
     @Override
     public boolean removeByUserId(String uId, Password uPw) {

@@ -1,18 +1,27 @@
 package org.example.overview.members.dto;
 
-import jakarta.validation.constraints.*;
 import org.example.overview.members.entity.Member;
 import org.example.overview.members.vo.MemberVO;
+import org.example.overview.valid.GeneralValidationGroup;
+import org.example.overview.valid.TestValidationGroup;
 import org.springframework.stereotype.Component;
 
-@Component
+import javax.validation.constraints.*;
+import java.io.Serializable;
+
 public class MemberDTO {
 
-    @Size(min = 0, max = 0, message = "uId Error")
+//    @NotEmpty(groups = {GeneralValidationGroup.class, TestValidationGroup.class})
+//    @Pattern(regexp = "[a-zA-Z]{1}[a-zA-Z0-9_-]{7,14}", groups = GeneralValidationGroup.class)
     private String uId = "";
 
+//    @NotNull(groups = {GeneralValidationGroup.class, TestValidationGroup.class})
     private Password uPw = null;
 
+    private Password uNewPw = null;
+
+//    @NotEmpty(groups = {GeneralValidationGroup.class, TestValidationGroup.class})
+//    @Pattern(regexp = "[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}", groups = GeneralValidationGroup.class)
     private String uEmail = "";
 
 
@@ -21,6 +30,11 @@ public class MemberDTO {
 
     public MemberDTO(String uId) {
         this.uId = uId;
+    }
+
+    public MemberDTO(String uId, String uEmail) {
+        this.uId = uId;
+        this.uEmail = uEmail;
     }
 
     public MemberDTO(String uId, String uPw, boolean needEncode) {
@@ -33,15 +47,35 @@ public class MemberDTO {
         this.uPw = uPw;
     }
 
+    public MemberDTO(String uId, Password uPw, Password uNewPw) {
+        this.uId = uId;
+        this.uPw = uPw;
+        this.uNewPw = uNewPw;
+    }
+
     public MemberDTO(String uId, String uPw, String uEmail, boolean needEncode) {
         this.uId = uId;
         this.uPw = needEncode ? Password.of(uPw, true) : Password.of(uPw, false);
         this.uEmail = uEmail;
     }
 
+    public MemberDTO(String uId, String uPw, String uNewPw, String uEmail, boolean needEncode) {
+        this.uId = uId;
+        this.uPw = needEncode ? Password.of(uPw, true) : Password.of(uPw, false);
+        this.uNewPw = needEncode ? Password.of(uNewPw, true) : Password.of(uNewPw, false);
+        this.uEmail = uEmail;
+    }
+
     public MemberDTO(String uId, Password uPw, String uEmail) {
         this.uId = uId;
         this.uPw = uPw;
+        this.uEmail = uEmail;
+    }
+
+    public MemberDTO(String uId, Password uPw, Password uNewPw, String uEmail) {
+        this.uId = uId;
+        this.uPw = uPw;
+        this.uNewPw = uNewPw;
         this.uEmail = uEmail;
     }
 
@@ -69,8 +103,23 @@ public class MemberDTO {
         return uPw.getuPw();
     }
 
+
     public void setuPw(Password uPw) {
         this.uPw = uPw;
+    }
+
+    public Password getuNewPw() {
+        return uNewPw;
+    }
+
+    public String getuNewPwStr() {
+        return uNewPw.getuPw();
+    }
+
+
+
+    public void setuNewPw(Password uNewPw) {
+        this.uNewPw = uNewPw;
     }
 
     public String getuEmail() {
@@ -81,13 +130,12 @@ public class MemberDTO {
         this.uEmail = uEmail;
     }
 
-
-
     @Override
     public String toString() {
         return "MemberDTO{" +
                 "uId='" + uId + '\'' +
                 ", uPw=" + uPw +
+                ", uNewPw=" + uNewPw +
                 ", uEmail='" + uEmail + '\'' +
                 '}';
     }
