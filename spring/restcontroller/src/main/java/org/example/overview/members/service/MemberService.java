@@ -65,24 +65,24 @@ public class MemberService implements IMemberService {
     }
 
     @Override
-    public MemberDTO login(String uId, String uPw) {
-        MemberDTO memberDTO = new MemberDTO(uId, uPw, true);
+    public MemberDTO login(String uId, Password uPw) {
+        MemberDTO memberDTO = new MemberDTO(uId, uPw);
         if (memberDTO == null || memberDTO.getuPwStr() == null) return null;
 
         Member member = memberDAO.select(memberDTO.getuId());
         if (member == null || member.getuPw() == null) return null;
         if (member.getuPw().equals(memberDTO.getuPwStr())) {
-            return memberDTO;
+            return member.toDTO();
         }
         return null;
     }
 
     @Override
-    public boolean signup(String uId, String uPw, String uEmail) {
-        MemberDTO memberDTO = new MemberDTO(uId, uPw, uEmail, false);
+    public boolean signup(String uId, Password uPw, String uEmail) {
+        MemberDTO memberDTO = new MemberDTO(uId, uPw, uEmail);
         if (memberDTO == null || memberDTO.getuPwStr() == null) return false;
 
-        int res = memberDAO.insert(memberDTO.toEntity());
+        int res = memberDAO.insert(memberDTO.toEntity(false));
         return res > 0;
     }
 
@@ -111,7 +111,19 @@ public class MemberService implements IMemberService {
         if (!member.getuPw().equals(uPw.getuPw())) return false;
         if (member.getuPw().equals(uNewPw.getuPw())) return false; // DB PWD == New PWD
 
-        int res = memberDAO.update(uId, uNewPw.getuPw());
+        int res = memberDAO.updatePassword(uId, uNewPw.getuPw());
+        return res > 0;
+    }
+
+    @Override
+    public boolean updateUserEmail(String uId, String uEmail) {
+        if (uId == null || uEmail == null) return false;
+
+        Member member = memberDAO.select(uId);
+        if (member == null) return false;
+        if (member.getuEmail().equals(uEmail)) return false; // DB Email == New Email
+
+        int res = memberDAO.updateEmail(uId, uEmail);
         return res > 0;
     }
 
