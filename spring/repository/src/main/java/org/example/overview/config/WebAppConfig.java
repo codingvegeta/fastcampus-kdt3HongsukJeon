@@ -1,14 +1,13 @@
 package org.example.overview.config;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.c3p0.DataSources;
-import com.mchange.v2.c3p0.jboss.C3P0PooledDataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -26,7 +25,7 @@ import java.beans.PropertyVetoException;
 )
 public class WebAppConfig implements EnvironmentAware {
 
-    Environment environment;
+    Environment environment; // null 임을 방지
 
     @Override
     public void setEnvironment(Environment environment) { // environment 객체가 null임을 방지
@@ -80,7 +79,7 @@ public class WebAppConfig implements EnvironmentAware {
 
     @Bean
     public HikariDataSource hikariDataSource() {
-        // com.mchange.v2.c3p0.ComboPooledDataSource
+        // com.zaxxer.hikari.HikariConfig
 
         com.zaxxer.hikari.HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setDriverClassName(environment.getProperty("spring.datasource.driverClassName"));
@@ -93,15 +92,28 @@ public class WebAppConfig implements EnvironmentAware {
         hikariConfig.setIdleTimeout(Long.parseLong(environment.getProperty("com.zaxxer.hikari.config.idleTimeout")));
 
         com.zaxxer.hikari.HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
+
+        System.out.println(hikariDataSource);
+
         return hikariDataSource;
     }
 
     @Bean
     public DataSource dataSource() {
-        return hikariDataSource();
+//        return basicDataSource(); // dbcp2
+//        return comboPooledDataSource(); // c3p0
+        return hikariDataSource(); // hikariConfig
+
     }
 
-    @Bean(name = "transactionManager") // Test 환경에서 @Transactional (rollback)
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        jdbcTemplate.setDataSource(dataSource());
+        return jdbcTemplate;
+    }
+
+    @Bean // Test 환경에서 @Transactional (rollback)
     public org.springframework.jdbc.datasource.DataSourceTransactionManager transactionManager() {
         DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
         dataSourceTransactionManager.setDataSource(dataSource());
