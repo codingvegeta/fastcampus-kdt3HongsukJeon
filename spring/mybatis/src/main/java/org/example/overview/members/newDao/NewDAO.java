@@ -69,7 +69,14 @@ public class NewDAO implements INewDAO {
 
     @Override
     public int insertSurvey(String uId, NewSurvey survey) { // 서베이 결과 삽입
+        NewMember member = newMapper.selectMember(uId);
+        if (member == null) return 0;
+
         int res = newMapper.insertSurvey(survey); // 서베이 결과를 삽입
+
+        System.out.println("survey = " + survey);
+        // survey_id가 INCREMENT 되는 열이고 AUTO INCREMENT 된 결과를 sId에 반환하기 위해 setter 호출
+
         if (res > 0) return newMapper.updateMemberSurveyId(uId, survey.getsId()); // 정상적으로 삽입되면 유저에 연결
         return 0;
     }
@@ -102,42 +109,51 @@ public class NewDAO implements INewDAO {
     @Override
     public int deleteSurvey(BigInteger sId) { // 서베이 내역 삭제
         String uId = newMapper.selectUserIdWithSurveyId(sId); // 서베이와 연결된 유저 이름을 검색
-        newMapper.updateMemberSurveyId(uId, null); // 해당 유저의 서베이 값을 널로 수정
+        if (uId != null) newMapper.updateMemberSurveyId(uId, null); // 해당 유저의 서베이 값을 널로 수정
         return newMapper.deleteSurvey(sId); // 서베이 내역 삭제
     }
 
     @Override
     public int deleteMember(String uId) { // 유저 삭제
+        // 서베이 결과는 무조건 유저 아이디가 있어야지만 등록
+        // 유저 삭제 -> 서베이 삭제
         NewMember member = newMapper.selectWithSurvey(uId);
-
         System.out.println(member);
 
-        int res = newMapper.deleteMember(uId); // 마지막으로 유저 삭제
+        int res = newMapper.deleteMember(uId);
         if (res == 0) return 0;
 
         if (member != null && member.getSurveyResult() != null) {
-            return newMapper.deleteSurvey(member.getSurveyResult().getsId());
+            newMapper.deleteSurvey(member.getSurveyResult().getsId());
         }
-        return 0;
-    }
 
-    @Override
-    public int deleteMembers() {
-        int res = newMapper.selectMembers().stream()
-                .map(m -> deleteMember(m.getuId()))
-                .reduce((x, y) -> x + y)
-                .orElse(0);
+        // 서베이 삭제 -> 유저 삭제
+        // 서베이의 sId를 유저 테이블에서 참조하고 있기 때문에 오류 (FK 제약조건)
+//        BigInteger sId = newMapper.selectSurveyIdWithUserId(uId);
+//        int res = newMapper.deleteSurvey(sId);
+//        if (res > 0) return newMapper.deleteMember(uId);
 
         return res;
     }
 
     @Override
+    public int deleteMembers() {
+
+        // List<NewMember>
+        return newMapper.selectMembers().stream()
+                .map(m -> deleteMember(m.getuId()))
+                .reduce((x, y) -> x + y)
+                .orElse(0);
+    }
+
+    @Override
     public int deleteSurveys() {
 
+        // List<NewSurvey>
         return newMapper.selectSurveys().stream()
                 .map(s -> deleteSurvey(s.getsId()))
-                .reduce((x, y) -> x + y).orElse(0);
-
+                .reduce((x, y) -> x + y)
+                .orElse(0);
 
     }
 }
